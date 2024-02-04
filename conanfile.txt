@@ -1,5 +1,6 @@
 [requires]
 abseil/20230802.1
+wasmtime-cpp/9.0.0
 
 [generators]
 CMakeDeps
