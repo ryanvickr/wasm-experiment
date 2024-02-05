@@ -31,7 +31,7 @@ absl::StatusOr<std::string> ReadWasmFile(std::string_view wasm_path) {
 void LOG(std::string_view message) {
     std::cout << "[" << absl::Now() << "] " << message;
 }
-}
+}  // namespace
 
 WasmManager::WasmManager(): 
     engine_(std::make_unique<wasmtime::Engine>()),
