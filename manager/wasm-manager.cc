@@ -5,7 +5,6 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
-#include <utility>
 
 #include "absl/memory/memory.h"
 #include "absl/status/status.h"
@@ -60,8 +59,8 @@ absl::Status WasmManager::AddWasm(std::string_view function_name,
             "Failed to instantiate Wasm: ", instance.err().message()));
     }
 
-    loaded_wasms_.emplace(function_name, std::make_unique<Wasm>(
-        module.unwrap(), instance.unwrap()));
+    Wasm new_wasm = {._module = module.unwrap(), ._instance = instance.unwrap()};
+    loaded_wasms_.emplace(function_name, std::make_unique<Wasm>(new_wasm));
     return absl::OkStatus();
 }
 
