@@ -5,8 +5,10 @@
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <utility>
 
 #include "absl/memory/memory.h"
+#include "absl/status/status.h"
 #include "absl/status/statusor.h"
 #include "absl/strings/str_cat.h"
 #include "wasmtime.hh"
@@ -20,7 +22,7 @@ absl::StatusOr<std::string> ReadWasmFile(std::string_view wasm_path) {
         wasm_file.open(wasm_path);
     } catch(...) {
         return absl::InvalidArgumentError(absl::StrCat(
-            "Could not read the wasmtime file at ", wasm_path));
+            "Could not read the wasmtime (.wat) file at: ", wasm_path));
     }
     std::stringstream str_stream;
     str_stream << wasm_file.rdbuf();
@@ -35,6 +37,33 @@ void LOG(std::string_view message) {
 WasmManager::WasmManager(): 
     engine_(std::make_unique<wasmtime::Engine>()),
     store_(std::make_unique<wasmtime::Store>(*engine_)) {}
+
+absl::Status WasmManager::AddWasm(std::string_view function_name,
+    std::string_view wasm_path, absl::AnyInvocable<void()> cb) {
+    auto wasm_str_or = ReadWasmFile(wasm_path);
+    if (!wasm_str_or.ok()) {
+        return wasm_str_or.status();
+    }
+
+    LOG("Compiling WASM...");
+    auto module = wasmtime::Module::compile(*engine_, *wasm_str_or);
+    if (!module) {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Failed to compile Wasm: ", module.err().message()));
+    }
+
+    LOG("Instantiate and loading WASM into store...");
+    wasmtime::Func func = wasmtime::Func::wrap(*store_, [&]() {cb();});
+    auto instance = wasmtime::Instance::create(*store_, module.unwrap(), {func});
+    if (!instance) {
+        return absl::InvalidArgumentError(absl::StrCat(
+            "Failed to instantiate Wasm: ", instance.err().message()));
+    }
+
+    loaded_wasms_.emplace(function_name, std::make_unique<Wasm>(
+        module.unwrap(), instance.unwrap()));
+    return absl::OkStatus();
+}
 
 }  // manager
 }  // wasm_experiment
