@@ -10,8 +10,8 @@ using namespace wasm_experiment;
 int main(int argc, char *argv[]) {
     // The first argument should be the WASM path.
     if (argc != 1) {
-        std::cerr << "Invalid arguments provided. Only the path of" 
-                  <<" the WasmTime (.wat) file should be provided." 
+        std::cerr << "Invalid arguments provided. Only the path of the" 
+                  << " WebAssembly Text (.wat) file should be provided." 
                   << std::endl;
         return 1;
     }
