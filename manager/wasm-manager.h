@@ -24,6 +24,7 @@ class WasmManager {
     std::string_view wasm_path, absl::AnyInvocable<void()> cb);
 
  private:
+  // Holds objects necessary to store and call a function.
   struct Wasm {
     wasmtime::Module _module;
     wasmtime::Instance _instance;
