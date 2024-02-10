@@ -18,22 +18,17 @@ class WasmManager {
   // configurations to be passed in.
   //  explicit WasmManager(const wasmtime::Config& config);
 
-  // Reads a `WasmTime` file from the provided path, and compiles it into the
-  // engine. Returns an error if operation was unsuccessful.
-  absl::Status AddWasm(std::string_view function_name, 
-    std::string_view wasm_path, absl::AnyInvocable<void()> cb);
+  // Reads a WebAssembly text file (.wat) from the provided path, 
+  // and compiles it into the engine. Returns an error if operation
+  // was unsuccessful.
+  absl::Status LoadWasm(
+      std::string_view wasm_path, std::function<void()> cb);
 
  private:
-  // Holds objects necessary to store and call a function.
-  struct Wasm {
-    wasmtime::Module _module;
-    wasmtime::Instance _instance;
-  };
-
   std::unique_ptr<wasmtime::Engine> engine_;
   std::unique_ptr<wasmtime::Store> store_;
-  // Stores a map of function name to its loaded instance/module.
-  std::unordered_map<std::string, std::unique_ptr<Wasm>> loaded_wasms_;
+  std::unique_ptr<wasmtime::Module> module_;
+  std::unique_ptr<wasmtime::Instance> instance_;
 };
 
 }  // manager
